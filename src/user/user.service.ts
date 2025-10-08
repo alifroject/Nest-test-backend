@@ -9,7 +9,7 @@ import { User } from './entities/user.entity';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>, // <-- Injected DB repository
+    private readonly userRepository: Repository<User>, 
   ) { }
 
   // CREATE
@@ -31,7 +31,7 @@ export class UserService {
 
   // READ ALL
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find(); // SELECT * FROM "user"
+    return await this.userRepository.find(); 
   }
 
   // READ ONE

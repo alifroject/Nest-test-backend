@@ -13,7 +13,10 @@ export class User {
     lastName: string;
 
 
-    @Column({unique: true})
+    @Column({ unique: true })
     email: string;
+
+    @Column({ default: 'user' })
+    role: string;
 
 }
