@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ApiTokenCheckMiddleware } from './common/middleware/api-token-check-middleware';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -29,7 +31,7 @@ import { User } from './user/entities/user.entity';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         entities: [User],
-        synchronize: true, 
+        synchronize: true,
         logging: true,
       }),
     }),
@@ -40,4 +42,10 @@ import { User } from './user/entities/user.entity';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+    .apply(ApiTokenCheckMiddleware)
+    .forRoutes("*")
+  }
+ }
