@@ -1,60 +1,65 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto } from './zod/user.schema';
-
-import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>, 
-  ) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   // CREATE
-  async create(createUserDto: CreateUserDto): Promise<User> {
-
+  async create(createUserDto: CreateUserDto) {
     const { email } = createUserDto;
 
-    const existingUser = await this.userRepository.findOne({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email },
-    })
+    });
 
     if (existingUser) {
-      throw new BadRequestException({message: 'Email already exist'});
+      throw new BadRequestException({ message: 'Email already exist' });
     }
 
-    const user = this.userRepository.create(createUserDto); // Create entity instance
-    return await this.userRepository.save(user);            // Save to DB
+    return await this.prisma.user.create({
+      data: createUserDto,
+    });
   }
 
   // READ ALL
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find(); 
+  async findAll() {
+    return await this.prisma.user.findMany();
   }
 
   // READ ONE
-  async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  async findOne(id: number) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
     return user;
   }
 
+  // FIND BY EMAIL
+  async findByEmail(email: string) {
+    return await this.prisma.user.findUnique({ where: { email } });
+  }
+
   // UPDATE
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
-    Object.assign(user, updateUserDto); // Merge existing + new data
-    return await this.userRepository.save(user);
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    // Check if user exists first
+    await this.findOne(id);
+
+    return await this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
   }
 
   // DELETE
   async remove(id: number): Promise<void> {
-    const result = await this.userRepository.delete(id);
-    if (result.affected === 0) {
+    const existing = await this.findOne(id);
+    if (!existing) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
+
+    await this.prisma.user.delete({ where: { id } });
   }
 }
