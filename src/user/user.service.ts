@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto } from './zod/user.schema';
+import { UserWithPassword } from './types/user.types';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   // CREATE
   async create(createUserDto: CreateUserDto) {
@@ -37,10 +38,15 @@ export class UserService {
     return user;
   }
 
-  // FIND BY EMAIL
-  async findByEmail(email: string) {
-    return await this.prisma.user.findUnique({ where: { email } });
+
+  async findByEmail(email: string): Promise<UserWithPassword | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    return user as UserWithPassword;
   }
+
 
   // UPDATE
   async update(id: number, updateUserDto: UpdateUserDto) {
