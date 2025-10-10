@@ -1,7 +1,7 @@
 export type UserWithPassword = {
   id: number;
   email: string;
-  password: string;
+  password: string | null;
   firstName: string;
   lastName: string;
   role: string;

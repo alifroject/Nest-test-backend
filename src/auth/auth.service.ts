@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -37,4 +38,39 @@ export class AuthService {
             },
         };
     }
+
+
+    async validateOAuthLogin(profile: any) {
+        let user = await this.userService.findByEmail(profile.emails[0].value);
+
+        if (!user) {
+            user = await this.userService.create({
+                firstName: profile.name.givenName,
+                lastName: profile.name.familyName,
+                email: profile.emails[0].value,
+                role: 'user',
+                password: 'oauth-placeholder', 
+            }) as User;
+
+        }
+
+        // generate JWT
+        const token = this.jwtService.sign({
+            id: user!.id,
+            email: user!.email,
+            role: user!.role,
+        });
+        return { user, token };
+    }
+    // auth.service.ts
+    async loginWithOAuth(user: User) {
+        const token = this.jwtService.sign({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+        });
+        return { user, token };
+    }
+
+
 }
