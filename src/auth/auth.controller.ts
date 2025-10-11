@@ -15,22 +15,28 @@ export class AuthController {
     }
 
     @Get('google/callback')
-    @Public() 
+    @Public()
     @UseGuards(AuthGuard('google'))
     async googleCallback(@Req() req, @Res() res: any) {
         const result = await this.authService.loginWithOAuth(req.user);
-        res.redirect(`http://localhost:3000/auth/callback?token=${result.token}`);
+        res.redirect(`http://localhost:3002/auth/callback?token=${result.token}`);
     }
 
     @Post('register')
-    @Public() 
+    @Public()
     async register(@Body() body: any) {
         return this.authService.register(body);
     }
 
     @Post('login')
-    @Public() 
+    @Public()
     async login(@Body() body: { email: string; password: string }) {
         return this.authService.login(body.email, body.password);
+    }
+    
+    @Get('me')
+    @UseGuards(AuthGuard('jwt'))
+    async getProfile(@Req() req) {
+        return req.user;
     }
 }
