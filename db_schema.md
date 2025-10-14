@@ -186,18 +186,16 @@ This document provides comprehensive documentation for the **BudgetApp** databas
 
 ---
 
-## ERD Graph (Diagram Entitas Hubungan)
+## ERD Graph (Entity Relationship Diagram)
 
-Diagram **Mermaid** ini memvisualisasikan Skema Database, menggunakan notasi **Crow's Foot** untuk hubungan, yang terlihat jauh lebih indah dan terstruktur daripada diagram teks biasa.
+Diagram **Mermaid** visualizing the Database Schema using **Crow's Foot notation**, structured and clean.
 
-```mermaid
 graph TD
-    USER -->|memiliki| SESSION
-    USER -->|membuat| BUDGET
-    USER -->|mencatat| TRANSACTION
-    USER -->|menghasilkan| REPORT
-    USER -->|mendefinisikan| CATEGORY
+    USER -->|has| SESSION
+    USER -->|creates| BUDGET
+    USER -->|records| TRANSACTION
+    USER -->|generates| REPORT
+    USER -->|defines| CATEGORY
 
-    BUDGET -->|terkait| TRANSACTION
-    CATEGORY -->|mengkategorikan| TRANSACTION
-```
+    BUDGET -->|includes| TRANSACTION
+    CATEGORY -->|categorizes| TRANSACTION
