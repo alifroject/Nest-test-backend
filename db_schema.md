@@ -191,80 +191,13 @@ This document provides comprehensive documentation for the **BudgetApp** databas
 Diagram **Mermaid** ini memvisualisasikan Skema Database, menggunakan notasi **Crow's Foot** untuk hubungan, yang terlihat jauh lebih indah dan terstruktur daripada diagram teks biasa.
 
 ```mermaid
-erDiagram
-    %% Relationships
-    USER ||--o{ SESSION : "memiliki"
-    USER ||--o{ BUDGET : "membuat"
-    USER ||--o{ TRANSACTION : "mencatat"
-    USER ||--o{ REPORT : "menghasilkan"
-    USER ||--o{ CATEGORY : "mendefinisikan"
+graph TD
+    USER -->|memiliki| SESSION
+    USER -->|membuat| BUDGET
+    USER -->|mencatat| TRANSACTION
+    USER -->|menghasilkan| REPORT
+    USER -->|mendefinisikan| CATEGORY
 
-    BUDGET ||--o{ TRANSACTION : "terkait"
-    CATEGORY }|--o{ TRANSACTION : "mengkategorikan"
-
-    %% Entity Definitions
-
-    USER {
-        int id PK
-        string firstName
-        string lastName
-        string email UK
-        string password
-        Provider provider
-        Role role
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    SESSION {
-        string id PK
-        int userId FK
-        string sid UK
-        string data
-        datetime expiresAt IX
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    BUDGET {
-        int id PK
-        int userId FK
-        string title
-        string category
-        decimal limitAmount
-        datetime startDate
-        datetime endDate
-        datetime createdAt
-    }
-
-    TRANSACTION {
-        int id PK
-        int budgetId FK
-        int userId FK
-        int categoryId FK
-        TransactionType type
-        decimal amount
-        string description
-        datetime date
-        datetime createdAt
-    }
-
-    REPORT {
-        int id PK
-        int userId FK
-        int month
-        int year
-        decimal totalIncome
-        decimal totalExpense
-        decimal netBalance
-        datetime createdAt
-    }
-
-    CATEGORY {
-        int id PK
-        int userId FK
-        string name
-        CategoryType type
-        string color
-        datetime createdAt
-    }
+    BUDGET -->|terkait| TRANSACTION
+    CATEGORY -->|mengkategorikan| TRANSACTION
+```
