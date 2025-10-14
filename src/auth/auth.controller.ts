@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Req, Res, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
@@ -11,26 +11,65 @@ export class AuthController {
     @Public()
     @UseGuards(AuthGuard('google'))
     async googleLogin() {
-        // This automatically redirects to Google
     }
 
     @Get('google/callback')
-    @Public() 
+    @Public()
     @UseGuards(AuthGuard('google'))
     async googleCallback(@Req() req, @Res() res: any) {
-        const result = await this.authService.loginWithOAuth(req.user);
-        res.redirect(`http://localhost:3000/auth/callback?token=${result.token}`);
+        try {
+            console.log('Session in callback:', req.session); 
+
+            if (!req.user) {
+                throw new UnauthorizedException('Google authentication failed');
+            }
+
+            // Pass the session to loginWithOAuth
+            const result = await this.authService.loginWithOAuth(req.user, req.session);
+
+            // Check if session exists before calling save
+            if (req.session) {
+                req.session.save((err) => {
+                    if (err) {
+                        console.error('Session save error:', err);
+                        return res.redirect('http://localhost:3002/auth/error?message=session_error');
+                    }
+                    console.log('Session saved, redirecting to dashboard');
+                   res.redirect('http://localhost:3002/auth/callback');
+                });
+            } else {
+                console.error('No session available in callback');
+                res.redirect('http://localhost:3002/auth/error?message=no_session');
+            }
+        } catch (error) {
+            console.error('Google OAuth callback error:', error);
+            res.redirect('http://localhost:3002/auth/error?message=auth_failed');
+        }
     }
 
     @Post('register')
-    @Public() 
+    @Public()
     async register(@Body() body: any) {
         return this.authService.register(body);
     }
 
     @Post('login')
-    @Public() 
-    async login(@Body() body: { email: string; password: string }) {
-        return this.authService.login(body.email, body.password);
+    @Public()
+    async login(@Body() body: { email: string; password: string }, @Req() req: any) {
+        return this.authService.login(body.email, body.password, req.session);
+    }
+
+    @Get('me')
+    async getProfile(@Req() req: any) {
+        console.log('Session in /me:', req.session); // Debug log
+        if (!req.session?.user) {
+            throw new UnauthorizedException('Not authenticated');
+        }
+        return req.session.user;
+    }
+
+    @Post('logout')
+    async logout(@Req() req: any) {
+        return this.authService.logout(req.session);
     }
 }

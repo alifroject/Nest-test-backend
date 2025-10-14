@@ -2,20 +2,16 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from '../auth/strategies/google.strategy';
-import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../user/user.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   imports: [
     UserModule,
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: {expiresIn: '1h'},
-    }),
+    PrismaModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
-  exports: [AuthService] 
+  providers: [AuthService, GoogleStrategy], // Remove JwtStrategy
+  exports: [AuthService]
 })
 export class AuthModule {}
