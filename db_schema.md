@@ -192,80 +192,79 @@ Diagram **Mermaid** ini memvisualisasikan Skema Database, menggunakan notasi **C
 
 ```mermaid
 erDiagram
-    %% Hubungan (Relationships)
-    USER ||--o{ SESSION : memiliki
-    USER ||--o{ BUDGET : membuat
-    USER ||--o{ TRANSACTION : mencatat
-    USER ||--o{ REPORT : menghasilkan
-    USER ||--o{ CATEGORY : mendefinisikan
+    %% Relationships
+    USER ||--o{ SESSION : "memiliki"
+    USER ||--o{ BUDGET : "membuat"
+    USER ||--o{ TRANSACTION : "mencatat"
+    USER ||--o{ REPORT : "menghasilkan"
+    USER ||--o{ CATEGORY : "mendefinisikan"
 
-    BUDGET ||--o{ TRANSACTION : terkait
+    BUDGET ||--o{ TRANSACTION : "terkait"
+    CATEGORY }|--o{ TRANSACTION : "mengkategorikan"
 
-    CATEGORY }|--o{ TRANSACTION : mengkategorikan
-
-    %% Definisi Tabel (Entity Definitions)
+    %% Entity Definitions
 
     USER {
-        int id PK "Kunci Utama"
-        string firstName "Nama Depan"
-        string lastName "Nama Belakang"
-        string email UK "Email (Unik)"
-        string password "Password Hash"
-        Provider provider "Penyedia Auth"
-        Role role "Peran Pengguna"
+        int id PK
+        string firstName
+        string lastName
+        string email UK
+        string password
+        Provider provider
+        Role role
         datetime createdAt
         datetime updatedAt
     }
 
     SESSION {
-        string id PK "Kunci Utama"
-        int userId FK "Kunci Asing, CASCADE"
-        string sid UK "ID Sesi Unik"
+        string id PK
+        int userId FK
+        string sid UK
         string data
-        datetime expiresAt IX "Index Kadaluarsa"
+        datetime expiresAt IX
         datetime createdAt
         datetime updatedAt
     }
 
     BUDGET {
-        int id PK "Kunci Utama"
-        int userId FK "Kunci Asing, CASCADE"
-        string title "Judul Anggaran"
-        string category "Kategori Opsional"
-        decimal limitAmount "Batas Anggaran"
+        int id PK
+        int userId FK
+        string title
+        string category
+        decimal limitAmount
         datetime startDate
         datetime endDate
         datetime createdAt
     }
 
     TRANSACTION {
-        int id PK "Kunci Utama"
-        int budgetId FK "Kunci Asing, CASCADE"
-        int userId FK "Kunci Asing, CASCADE"
-        int categoryId FK "Kunci Asing, SET NULL"
-        TransactionType type "Jenis (Income/Expense)"
-        decimal amount "Jumlah Transaksi"
-        string description "Deskripsi"
-        datetime date "Tanggal Transaksi"
+        int id PK
+        int budgetId FK
+        int userId FK
+        int categoryId FK
+        TransactionType type
+        decimal amount
+        string description
+        datetime date
         datetime createdAt
     }
 
     REPORT {
-        int id PK "Kunci Utama"
-        int userId FK "Kunci Asing, CASCADE"
-        int month "Bulan"
-        int year "Tahun"
-        decimal totalIncome "Total Pemasukan"
-        decimal totalExpense "Total Pengeluaran"
-        decimal netBalance "Saldo Bersih"
+        int id PK
+        int userId FK
+        int month
+        int year
+        decimal totalIncome
+        decimal totalExpense
+        decimal netBalance
         datetime createdAt
     }
 
     CATEGORY {
-        int id PK "Kunci Utama"
-        int userId FK "Kunci Asing, CASCADE"
-        string name "Nama Kategori"
-        CategoryType type "Jenis (Income/Expense)"
-        string color "Kode Warna Opsional"
+        int id PK
+        int userId FK
+        string name
+        CategoryType type
+        string color
         datetime createdAt
     }
