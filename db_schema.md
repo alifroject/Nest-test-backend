@@ -188,8 +188,7 @@ This document provides comprehensive documentation for the **BudgetApp** databas
 
 ## ERD Graph (Entity Relationship Diagram)
 
-Diagram **Mermaid** visualizing the Database Schema using **Crow's Foot notation**, structured and clean.
-
+```mermaid
 graph TD
     USER -->|has| SESSION
     USER -->|creates| BUDGET
@@ -199,3 +198,4 @@ graph TD
 
     BUDGET -->|includes| TRANSACTION
     CATEGORY -->|categorizes| TRANSACTION
+```
