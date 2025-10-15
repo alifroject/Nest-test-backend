@@ -6,6 +6,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { TransactionModule } from './transaction/transaction.module';
+import { CategoryModule } from './category/category.module';
+import { BudgetModule } from './budget/budget.module';
+import { ReportModule } from './report/report.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -14,6 +19,11 @@ import { UserModule } from './user/user.module';
     }),
     UserModule,
     AuthModule,
+    TransactionModule,
+    CategoryModule,
+    BudgetModule,
+    ReportModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
