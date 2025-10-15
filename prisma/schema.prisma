@@ -3,15 +3,99 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // or mysql/sqlite
+  provider = "postgresql" 
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  firstName String
-  lastName  String
-  email     String   @unique
-  role      String   @default("user")
-  createdAt DateTime @default(now())
+  id           Int           @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  email        String        @unique
+  password     String?
+  phoneNumber  String?
+  provider     Provider      @default(local)
+  role         Role          @default(user)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  budgets      Budget[]
+  transactions Transaction[]
+  reports      Report[]
+  categories   Category[]
+}
+
+model Budget {
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  title        String
+  category     String?
+  limitAmount  Decimal
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime      @default(now())
+
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+}
+
+model Transaction {
+  id           Int           @id @default(autoincrement())
+  budgetId     Int
+  userId       Int
+  type         TransactionType
+  amount       Decimal
+  description  String?
+  date         DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  categoryId   Int?
+
+  user         User          @relation(fields: [userId], references: [id])
+  budget       Budget        @relation(fields: [budgetId], references: [id])
+  category     Category?     @relation(fields: [categoryId], references: [id])
+}
+
+model Report {
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  month        Int
+  year         Int
+  totalIncome  Decimal       @default(0)
+  totalExpense Decimal       @default(0)
+  netBalance   Decimal       @default(0)
+  createdAt    DateTime      @default(now())
+
+  user         User          @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  name         String
+  type         CategoryType  @default(expense)
+  color        String?
+  createdAt    DateTime      @default(now())
+
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+}
+
+enum Provider {
+  local
+  google
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum TransactionType {
+  income
+  expense
+}
+
+enum CategoryType {
+  income
+  expense
 }
