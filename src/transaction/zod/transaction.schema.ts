@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 export const createTransactionSchema = z.object({
-    userId: z.number().int().positive(),
     budgetId: z.number().int().positive(),
     type: z.enum(['income', 'expense']),
     amount: z.number().positive(),

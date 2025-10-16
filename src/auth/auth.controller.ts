@@ -2,7 +2,10 @@ import { Body, Controller, Get, Post, UseGuards, Req, Res, UnauthorizedException
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { SessionAuthGuard } from 'src/common/guards/session-auth.guard';
 
+@UseGuards(ThrottlerGuard)
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
@@ -18,7 +21,7 @@ export class AuthController {
     @UseGuards(AuthGuard('google'))
     async googleCallback(@Req() req, @Res() res: any) {
         try {
-            console.log('Session in callback:', req.session); 
+            console.log('Session in callback:', req.session);
 
             if (!req.user) {
                 throw new UnauthorizedException('Google authentication failed');
@@ -35,7 +38,7 @@ export class AuthController {
                         return res.redirect('http://localhost:3002/auth/error?message=session_error');
                     }
                     console.log('Session saved, redirecting to dashboard');
-                   res.redirect('http://localhost:3002/auth/callback');
+                    res.redirect('http://localhost:3002/auth/callback');
                 });
             } else {
                 console.error('No session available in callback');
@@ -53,15 +56,21 @@ export class AuthController {
         return this.authService.register(body);
     }
 
+
     @Post('login')
     @Public()
     async login(@Body() body: { email: string; password: string }, @Req() req: any) {
-        return this.authService.login(body.email, body.password, req.session);
+        const result = await this.authService.login(body.email, body.password, req.session);
+        if (result.user.role === 'admin') {
+            console.log('Admin logged in:', result.user.email);
+        }
+        return result
     }
 
     @Get('me')
+    @UseGuards(SessionAuthGuard)
     async getProfile(@Req() req: any) {
-        console.log('Session in /me:', req.session); // Debug log
+        console.log('Session in /me:', req.session);
         if (!req.session?.user) {
             throw new UnauthorizedException('Not authenticated');
         }

@@ -11,9 +11,17 @@ import { CategoryModule } from './category/category.module';
 import { BudgetModule } from './budget/budget.module';
 import { ReportModule } from './report/report.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,       // time to live: 60 seconds
+        limit: 10,     // max 10 requests per 60 seconds per IP
+      },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
