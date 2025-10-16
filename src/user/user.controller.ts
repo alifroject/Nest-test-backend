@@ -1,76 +1,69 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
   Patch,
-  Param,
-  Delete,
-  HttpException,
-  HttpStatus,
+  Body,
+  Req,
   BadRequestException,
+  UseGuards,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import {
-  CreateUserSchema,
-  UpdateUserSchema,
-  CreateUserDto,
-  UpdateUserDto,
-} from './zod/user.schema';
+import { UpdateUserSchema } from './zod/user.schema';
+import { SessionAuthGuard } from 'src/common/guards/session-auth.guard';
+import { AdminGuard } from 'src/common/guards/admin.guard';
+import type { Request } from 'express';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
+@UseGuards(SessionAuthGuard, ThrottlerGuard)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
-  @Post()
-  create(@Body() body: any) {
-    const result = CreateUserSchema.safeParse(body);
-    if (!result.success) {
-      throw new BadRequestException(result.error.format());
-    }
-    return this.userService.create(result.data);
-  }
-
-  @Get()
-  async findAll() {
-    const user = await this.userService.findAll();
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
+  @Throttle({ short: { limit: 10, ttl: 60 } })
+  @Get('profile')
+  async getProfile(@Req() req: Request) {
+    const userId = req.session.user.id;
+    const user = await this.userService.findOne(userId);
     return {
       success: true,
       user,
-      message: 'User read successfully',
+      message: 'Profile retrieved successfully',
     };
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const user = await this.userService.findOne(+id);
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    return {
-      success: true,
-      user,
-      message: 'User read successfully',
-    };
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() body: any) {
+  @Throttle({ short: { limit: 5, ttl: 60 } })
+  @Patch('profile')
+  async updateProfile(@Req() req: Request, @Body() body: any) {
     const result = UpdateUserSchema.safeParse(body);
     if (!result.success) {
       throw new BadRequestException(result.error.format());
     }
 
-    return this.userService.update(+id, result.data);
+    const userId = req.session.user.id;
+    return this.userService.update(userId, result.data);
   }
 
+  //Admin only: get all users
+  @Throttle({ short: { limit: 20, ttl: 60 } })
+  @UseGuards(AdminGuard)
+  @Get()
+  async findAll() {
+    const users = await this.userService.findAll();
+    return {
+      success: true,
+      users,
+      message: 'All users retrieved (admin access)',
+    };
+  }
+
+  //Admin only: delete user by id
+  @Throttle({ short: { limit: 5, ttl: 60 } })
+  @UseGuards(AdminGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  async remove(@Param('id') id: string) {
+    await this.userService.remove(+id);
+    return { success: true, message: `User ${id} deleted by admin` };
   }
 }
