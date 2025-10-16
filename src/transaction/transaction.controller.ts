@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, BadGatewayException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, BadRequestException, Req } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import {
   createTransactionSchema,
@@ -17,7 +17,7 @@ export class TransactionController {
   create(@Body() body: any, @Req() req: Request) {
     const result = createTransactionSchema.safeParse(body)
     if (!result.success) {
-      throw new BadGatewayException(result.error.format())
+      throw new BadRequestException(result.error.format())
     }
     return this.transactionService.create(result.data, req.session.user.id);
   }
@@ -36,7 +36,7 @@ export class TransactionController {
   update(@Param('id') id: string, @Body() body: any) {
     const result = updateTransactionSchema.safeParse(body);
     if (!result.success) {
-      throw new BadGatewayException(result.error.format())
+      throw new BadRequestException(result.error.format())
     }
     return this.transactionService.update(+id, result.data);
   }
