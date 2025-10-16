@@ -1,4 +1,3 @@
-import { Category } from 'src/category/entities/category.entity';
 import { z } from 'zod';
 
 export const createTransactionSchema = z.object({
