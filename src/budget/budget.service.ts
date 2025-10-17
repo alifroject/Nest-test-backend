@@ -1,26 +1,61 @@
-import { Injectable } from '@nestjs/common';
-import { CreateBudgetDto } from './dto/create-budget.dto';
-import { UpdateBudgetDto } from './dto/update-budget.dto';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateBudgetSchema, UpdateBudgetSchema } from './zod/budget.schema';
 
 @Injectable()
 export class BudgetService {
-  create(createBudgetDto: CreateBudgetDto) {
-    return 'This action adds a new budget';
-  }
+    constructor(private readonly prisma: PrismaService) { }
 
-  findAll() {
-    return `This action returns all budget`;
-  }
+    //create logic
+    async create(data: CreateBudgetSchema, userId) {
+        return this.prisma.budget.create({
+            data: {
+                ...data,
+                startDate: data.startDate ? new Date(data.startDate) : undefined,
+                endDate: data.endDate ? new Date(data.endDate) : undefined,
+                userId
+            }
+        })
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} budget`;
-  }
+    //
+    async findAll(userId: number) {
+        return this.prisma.budget.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' }
+        })
+    }
 
-  update(id: number, updateBudgetDto: UpdateBudgetDto) {
-    return `This action updates a #${id} budget`;
-  }
+    //
+    async findOne(id: number, userId) {
+        return this.prisma.budget.findFirst({
+            where: { id, userId }
+        });
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} budget`;
-  }
+
+    //
+    async update(id: number, data: UpdateBudgetSchema, userId: number) {
+        const budget = await this.prisma.budget.findUnique({ where: { id } });
+        if (!budget) throw new NotFoundException(`Budget ${id} not found`);
+        if (budget.userId !== userId) throw new ForbiddenException(`Not your budget`);
+
+        return this.prisma.budget.update({
+            where: { id },
+            data: {
+                ...data,
+                startDate: data.startDate ? new Date(data.startDate) : undefined,
+                endDate: data.endDate ? new Date(data.endDate) : undefined,
+            },
+        });
+    }
+
+
+
+    //
+    async remove(id: number) {
+        return this.prisma.budget.delete({
+            where: { id }
+        })
+    }
 }
