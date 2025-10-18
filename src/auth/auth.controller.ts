@@ -61,11 +61,20 @@ export class AuthController {
     @Public()
     async login(@Body() body: { email: string; password: string }, @Req() req: any) {
         const result = await this.authService.login(body.email, body.password, req.session);
-        if (result.user.role === 'admin') {
-            console.log('Admin logged in:', result.user.email);
-        }
-        return result
+
+        req.session.user = result.user;
+
+        await new Promise<void>((resolve, reject) => {
+            req.session.save((err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        console.log('Session after login:', req.session);
+        return result;
     }
+
 
     @Get('me')
     @UseGuards(SessionAuthGuard)
@@ -74,7 +83,7 @@ export class AuthController {
         if (!req.session?.user) {
             throw new UnauthorizedException('Not authenticated');
         }
-        return req.session.user;
+        return { user: req.session.user };
     }
 
     @Post('logout')

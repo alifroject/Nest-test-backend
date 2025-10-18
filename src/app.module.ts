@@ -45,7 +45,9 @@ export class AppModule implements NestModule {
         'auth/google/callback',
         'auth/login', 
         'auth/register',
-        'auth/(.*)' 
+        'auth/(.*)' ,
+        'budget',
+        'budget/(.*)' 
       )
       .forRoutes('*');
   }
