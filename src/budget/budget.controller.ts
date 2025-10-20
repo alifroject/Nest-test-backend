@@ -41,6 +41,8 @@ export class BudgetController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() body: any, @Req() req: Request) {
     const result = updateBudgetSchema.safeParse(body);
+    console.log('Body received:', body);
+
     if (!result.success) {
       throw new BadRequestException(result.error.format());
     }

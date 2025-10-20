@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBudgetSchema, UpdateBudgetSchema } from './zod/budget.schema';
 
@@ -6,17 +8,24 @@ import { CreateBudgetSchema, UpdateBudgetSchema } from './zod/budget.schema';
 export class BudgetService {
     constructor(private readonly prisma: PrismaService) { }
 
-    //create logic
-    async create(data: CreateBudgetSchema, userId) {
-        return this.prisma.budget.create({
-            data: {
-                ...data,
-                startDate: data.startDate ? new Date(data.startDate) : undefined,
-                endDate: data.endDate ? new Date(data.endDate) : undefined,
-                userId
-            }
-        })
+    async create(data: CreateBudgetSchema, userId: number) {
+        const budgetData: Prisma.BudgetCreateInput = {
+            title: data.title,
+            user: { connect: { id: userId } },
+            startDate: data.startDate ? new Date(data.startDate) : undefined,
+            endDate: data.endDate ? new Date(data.endDate) : undefined,
+            category: data.category,
+            limitAmount:
+                data.limitAmount !== undefined
+                    ? typeof data.limitAmount === 'number'
+                        ? data.limitAmount
+                        : new Prisma.Decimal(data.limitAmount)
+                    : new Prisma.Decimal(0), 
+        };
+
+        return this.prisma.budget.create({ data: budgetData });
     }
+
 
     //
     async findAll(userId: number) {
