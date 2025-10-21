@@ -7,8 +7,10 @@ export const createBudgetSchema = z.object({
   limitAmount: z.union([z.string(), z.number()]).refine(val => !isNaN(Number(val)), {
     message: "limitAmount must be a number",
   }).optional(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)").optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)").optional(),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Invalid datetime format").optional(),
+
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Invalid datetime format").optional(),
+
   isRecurring: z.boolean().optional().default(false),
   status: z.enum(['active', 'completed', 'archived']).default('active').optional(),
 });
@@ -21,8 +23,10 @@ export const updateBudgetSchema = z.object({
     z.string().transform(val => parseFloat(val)), // Accept string and convert to number
     z.number()  // Or accept number directly
   ]).optional(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)").optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)").optional(),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Invalid datetime format").optional(),
+
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "Invalid datetime format").optional(),
+
   isRecurring: z.boolean().optional().default(false),
   status: z.enum(['active', 'completed', 'archived']).default('active').optional(),
 });

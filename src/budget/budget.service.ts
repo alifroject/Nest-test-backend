@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBudgetSchema, UpdateBudgetSchema } from './zod/budget.schema';
@@ -8,12 +7,17 @@ import { CreateBudgetSchema, UpdateBudgetSchema } from './zod/budget.schema';
 export class BudgetService {
     constructor(private readonly prisma: PrismaService) { }
 
+    private applyLocal(dateInput?: string | Date) {
+        const d = dateInput ? new Date(dateInput) : new Date();
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+    }
+
     async create(data: CreateBudgetSchema, userId: number) {
         const budgetData: Prisma.BudgetCreateInput = {
             name: data.name,
             user: { connect: { id: userId } },
-            startDate: data.startDate ? new Date(data.startDate) : new Date(),
-            endDate: data.endDate ? new Date(data.endDate) : new Date(),
+            startDate: this.applyLocal(data.startDate),
+            endDate: this.applyLocal(data.endDate),
             category: data.category,
             isRecurring: data.isRecurring,
             status: data.status,
@@ -28,8 +32,6 @@ export class BudgetService {
         return this.prisma.budget.create({ data: budgetData });
     }
 
-
-    //
     async findAll(userId: number) {
         return this.prisma.budget.findMany({
             where: { userId },
@@ -37,15 +39,12 @@ export class BudgetService {
         })
     }
 
-    //
     async findOne(id: number, userId) {
         return this.prisma.budget.findFirst({
             where: { id, userId }
         });
     }
 
-
-    //
     async update(id: number, data: UpdateBudgetSchema, userId: number) {
         const budget = await this.prisma.budget.findUnique({ where: { id } });
         if (!budget) throw new NotFoundException(`Budget ${id} not found`);
@@ -55,23 +54,19 @@ export class BudgetService {
             where: { id },
             data: {
                 ...data,
-                startDate: data.startDate ? new Date(data.startDate) : undefined,
-                endDate: data.endDate ? new Date(data.endDate) : undefined,
+                startDate: data.startDate ? this.applyLocal(data.startDate) : undefined,
+                endDate: data.endDate ? this.applyLocal(data.endDate) : undefined,
                 isRecurring: data.isRecurring,
                 status: data.status,
             },
         });
     }
 
-
-
-    //
     async remove(id: number) {
         return this.prisma.budget.delete({
             where: { id }
         })
     }
-
 
     async updateExpiredBudgets(): Promise<number> {
         const result = await this.prisma.budget.updateMany({
