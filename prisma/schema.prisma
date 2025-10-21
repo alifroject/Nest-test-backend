@@ -37,16 +37,20 @@ model Session {
 model Budget {
   id           Int           @id @default(autoincrement())
   userId       Int
-  title        String
-  category     String?
-  limitAmount  Decimal
-  startDate    DateTime?
-  endDate      DateTime?
+  name         String        // user-defined name, e.g., "Groceries", "October Budget"
+  category     String?       // optional grouping (e.g., Food, Utilities)
+  limitAmount  Decimal       // spending limit
+  startDate    DateTime      // defines budget period start
+  endDate      DateTime      // defines budget period end
+  isRecurring  Boolean       @default(false) // if true, auto-renews for next period
+  status       String        @default("active") // can be 'active', 'completed', 'archived'
   createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
 }
+
 
 model Transaction {
   id           Int           @id @default(autoincrement())
