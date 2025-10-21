@@ -71,4 +71,19 @@ export class BudgetService {
             where: { id }
         })
     }
+
+
+    async updateExpiredBudgets(): Promise<number> {
+        const result = await this.prisma.budget.updateMany({
+            where: {
+                endDate: { lt: new Date() },
+                status: 'active',
+            },
+            data: {
+                status: 'completed',
+            },
+        });
+
+        return result.count; 
+    }
 }
