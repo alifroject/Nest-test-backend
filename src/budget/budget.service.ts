@@ -10,17 +10,19 @@ export class BudgetService {
 
     async create(data: CreateBudgetSchema, userId: number) {
         const budgetData: Prisma.BudgetCreateInput = {
-            title: data.title,
+            name: data.name,
             user: { connect: { id: userId } },
-            startDate: data.startDate ? new Date(data.startDate) : undefined,
-            endDate: data.endDate ? new Date(data.endDate) : undefined,
+            startDate: data.startDate ? new Date(data.startDate) : new Date(),
+            endDate: data.endDate ? new Date(data.endDate) : new Date(),
             category: data.category,
+            isRecurring: data.isRecurring,
+            status: data.status,
             limitAmount:
                 data.limitAmount !== undefined
                     ? typeof data.limitAmount === 'number'
                         ? data.limitAmount
                         : new Prisma.Decimal(data.limitAmount)
-                    : new Prisma.Decimal(0), 
+                    : new Prisma.Decimal(0),
         };
 
         return this.prisma.budget.create({ data: budgetData });
@@ -55,6 +57,8 @@ export class BudgetService {
                 ...data,
                 startDate: data.startDate ? new Date(data.startDate) : undefined,
                 endDate: data.endDate ? new Date(data.endDate) : undefined,
+                isRecurring: data.isRecurring,
+                status: data.status,
             },
         });
     }
