@@ -20,7 +20,8 @@ async function bootstrap() {
     session({
       store: new PgSession({
         conString: process.env.DATABASE_URL,
-        tableName: 'session', 
+        tableName: 'session',
+        createTableIfMissing: true,
       }),
       secret: process.env.SESSION_SECRET || 'secret-key',
       resave: false,
@@ -33,7 +34,7 @@ async function bootstrap() {
       },
     }),
   );
-  
+
   //port
   app.use(morgan('dev'))
   await app.listen(process.env.PORT ?? 3001);
