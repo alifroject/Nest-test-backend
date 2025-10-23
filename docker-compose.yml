@@ -1,7 +1,13 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:15
-    container_name: budgeting_db
+    container_name: .....
+    environment:
+      POSTGRES_USER: .....
+      POSTGRES_PASSWORD: ....
+      POSTGRES_DB: .....
     ports:
       - "5432:5432"
     volumes:
@@ -14,22 +20,30 @@ services:
       - "3001:3001"
     env_file:
       - ./backend-api/.env
+    volumes:
+      - ./backend-api:/app
+      - /app/node_modules
+    command: npm run start:dev
     depends_on:
       - db
     restart: on-failure
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: build  
     container_name: frontend
     ports:
-      - "3002:80"
+      - "3002:3000"
     volumes:
-    - ./frontend:/app         # mount local code into container
-    - /app/node_modules       # keep container's node_modules separate
-    command: npm run dev        # run frontend in dev mode (with hot reload)
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+    - ./frontend/.env
+    command: npm start
     depends_on:
       - backend
-    
 
 volumes:
   db_data:
