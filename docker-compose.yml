@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: budgeting_db
+    environment:
+      POSTGRES_USER: //change yours
+      POSTGRES_PASSWORD: //change yours
+      POSTGRES_DB: //change yours
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend-api
+    container_name: backend
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend-api/.env
+    volumes:
+      - ./backend-api:/app
+      - /app/node_modules
+    command: npm run start:dev
+    depends_on:
+      - db
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: build  
+    container_name: frontend
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+    - ./frontend/.env
+    command: npm start
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
