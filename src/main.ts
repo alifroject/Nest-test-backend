@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
+import { CsrfMiddleware } from './common/middleware/csrf.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,7 +35,7 @@ async function bootstrap() {
       },
     }),
   );
-
+  app.use(new CsrfMiddleware().use);
   //port
   app.use(morgan('dev'))
   await app.listen(process.env.PORT ?? 3001);
